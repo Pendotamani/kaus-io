@@ -1,5 +1,6 @@
-import { Plus, MessageSquare, Trash2, X, Moon, Sun } from "lucide-react";
+import { Plus, MessageSquare, Trash2, X, Moon, Sun, ShieldCheck, Info, Settings as SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { KausLogo } from "./KausLogo";
 import { useChatStore } from "@/lib/chat-store";
 import { cn } from "@/lib/utils";
@@ -7,11 +8,16 @@ import { cn } from "@/lib/utils";
 export function ChatSidebar({
   open,
   onClose,
+  onOpenAbout,
+  onOpenSettings,
 }: {
   open: boolean;
   onClose: () => void;
+  onOpenAbout?: () => void;
+  onOpenSettings?: () => void;
 }) {
-  const { chats, activeId, selectChat, deleteChat, newChat, theme, setTheme } = useChatStore();
+  const { chats, activeId, selectChat, deleteChat, newChat, theme, setTheme, isGuest } =
+    useChatStore();
 
   return (
     <>
@@ -48,6 +54,14 @@ export function ChatSidebar({
             <X className="h-4 w-4" />
           </Button>
         </div>
+
+        {isGuest && (
+          <div className="px-3 pt-3">
+            <Badge variant="secondary" className="gap-1 w-full justify-center py-1">
+              <ShieldCheck className="h-3 w-3" /> Guest Mode
+            </Badge>
+          </div>
+        )}
 
         <div className="p-3">
           <Button
@@ -104,7 +118,27 @@ export function ChatSidebar({
           </ul>
         </div>
 
-        <div className="border-t border-sidebar-border p-3">
+        <div className="border-t border-sidebar-border p-3 space-y-1">
+          {onOpenAbout && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2"
+              onClick={onOpenAbout}
+            >
+              <Info className="h-4 w-4" />
+              About Kaus
+            </Button>
+          )}
+          {onOpenSettings && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2"
+              onClick={onOpenSettings}
+            >
+              <SettingsIcon className="h-4 w-4" />
+              Settings
+            </Button>
+          )}
           <Button
             variant="ghost"
             className="w-full justify-start gap-2"
