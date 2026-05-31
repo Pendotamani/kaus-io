@@ -1,18 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { Menu, Sparkles } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { ArrowRight, Sparkles, Shield, Zap, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChatSidebar } from "@/components/ChatSidebar";
-import { ChatMessage } from "@/components/ChatMessage";
-import { PromptInput } from "@/components/PromptInput";
 import { KausLogo } from "@/components/KausLogo";
-import {
-  useChatStore,
-  makeMessage,
-  type Attachment,
-  type Message,
-} from "@/lib/chat-store";
-import { toast } from "sonner";
+import { AboutDialog } from "@/components/AboutDialog";
+import { KAUS_CONFIG } from "@/lib/kaus-config";
+import { useChatStore } from "@/lib/chat-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,243 +13,126 @@ export const Route = createFileRoute("/")({
       { title: "Kaus — AI Assistant" },
       {
         name: "description",
-        content: "Kaus is a fast, thoughtful AI assistant for ideas, writing, and answers.",
+        content:
+          "Kaus is a fast, thoughtful AI assistant. Continue as guest to start chatting instantly.",
       },
       { property: "og:title", content: "Kaus — AI Assistant" },
       {
         property: "og:description",
-        content: "Chat with Kaus, your thoughtful AI assistant.",
+        content: "Chat with Kaus instantly. No account required.",
       },
     ],
   }),
-  component: KausChat,
+  component: Landing,
 });
 
-const SUGGESTIONS = [
-  { title: "Explain a concept", prompt: "Explain quantum entanglement like I'm 12." },
-  { title: "Write a draft", prompt: "Draft a friendly follow-up email to a new client." },
-  { title: "Plan something", prompt: "Plan a 3-day trip to Lisbon for a first-time visitor." },
-  { title: "Code help", prompt: "Show me a TypeScript debounce function with tests." },
-];
+function Landing() {
+  const navigate = useNavigate();
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const { setGuest } = useChatStore();
 
-function KausChat() {
-  const {
-    chats,
-    activeId,
-    newChat,
-    addMessage,
-    updateLastAssistant,
-    theme,
-    setTheme,
-  } = useChatStore();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
-  const scrollerRef = useRef<HTMLDivElement>(null);
-
-  // hydrate theme on mount
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
-
-  const active = chats.find((c) => c.id === activeId) ?? null;
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [active?.messages.length, loading]);
-
-  const send = async (text: string, attachments: Attachment[]) => {
-    let chatId = activeId;
-    if (!chatId) chatId = newChat();
-
-    const userMsg = makeMessage("user", text, attachments.length ? attachments : undefined);
-    addMessage(chatId, userMsg);
-
-    // Build content for AI — attach image data as multimodal parts where supported.
-    const history = (useChatStore.getState().chats.find((c) => c.id === chatId)?.messages ??
-      []) as Message[];
-
-    const apiMessages = history.map((m) => {
-      if (m.role === "user" && m.attachments?.some((a) => a.type.startsWith("image/") && a.dataUrl)) {
-        const parts: Array<Record<string, unknown>> = [];
-        if (m.content) parts.push({ type: "text", text: m.content });
-        for (const a of m.attachments) {
-          if (a.type.startsWith("image/") && a.dataUrl) {
-            parts.push({ type: "image_url", image_url: { url: a.dataUrl } });
-          } else {
-            parts.push({ type: "text", text: `[Attached file: ${a.name} (${a.type})]` });
-          }
-        }
-        return { role: m.role, content: parts };
-      }
-      const fileNote =
-        m.attachments && m.attachments.length
-          ? `\n\n[Attached: ${m.attachments.map((a) => a.name).join(", ")}]`
-          : "";
-      return { role: m.role, content: (m.content || "") + fileNote };
-    });
-
-    addMessage(chatId, makeMessage("assistant", ""));
-    setLoading(true);
-
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
-
-    try {
-      const resp = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages }),
-        signal: ctrl.signal,
-      });
-
-      if (!resp.ok || !resp.body) {
-        const errBody = await resp.json().catch(() => ({}));
-        throw new Error(errBody.error || `Request failed (${resp.status})`);
-      }
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let acc = "";
-      let done = false;
-
-      while (!done) {
-        const { value, done: streamDone } = await reader.read();
-        if (streamDone) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        let nl: number;
-        while ((nl = buffer.indexOf("\n")) !== -1) {
-          let line = buffer.slice(0, nl);
-          buffer = buffer.slice(nl + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line || line.startsWith(":")) continue;
-          if (!line.startsWith("data: ")) continue;
-          const data = line.slice(6).trim();
-          if (data === "[DONE]") {
-            done = true;
-            break;
-          }
-          try {
-            const parsed = JSON.parse(data);
-            const delta = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (delta) {
-              acc += delta;
-              updateLastAssistant(chatId!, acc);
-            }
-          } catch {
-            buffer = line + "\n" + buffer;
-            break;
-          }
-        }
-      }
-
-      if (!acc) {
-        updateLastAssistant(chatId!, "I couldn't generate a response. Please try again.");
-      }
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "Something went wrong.";
-      if ((e as Error).name === "AbortError") {
-        updateLastAssistant(chatId!, "_Response stopped._");
-      } else {
-        updateLastAssistant(chatId!, `**Error:** ${message}`);
-        toast.error(message);
-      }
-    } finally {
-      setLoading(false);
-      abortRef.current = null;
-    }
+  const continueAsGuest = () => {
+    setGuest(true);
+    navigate({ to: "/chat" });
   };
-
-  const stop = () => {
-    abortRef.current?.abort();
-  };
-
-  const empty = !active || active.messages.length === 0;
 
   return (
-    <div className="h-screen w-full flex bg-background text-foreground">
-      <ChatSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-      <main className="flex-1 flex flex-col min-w-0">
-        <header className="flex items-center gap-2 px-3 sm:px-6 h-14 border-b border-border bg-background/80 backdrop-blur sticky top-0 z-10">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="md:hidden h-9 w-9"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open sidebar"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-2 min-w-0">
-            <KausLogo size={28} className="md:hidden" />
-            <h1 className="font-semibold tracking-tight truncate">
-              {active?.title || "Kaus"}
-            </h1>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <header className="flex items-center justify-between px-5 sm:px-8 h-16 border-b border-border">
+        <div className="flex items-center gap-2.5">
+          <KausLogo size={32} />
+          <div className="leading-tight">
+            <div className="font-semibold tracking-tight">Kaus</div>
+            <div className="text-[11px] text-muted-foreground -mt-0.5">AI Assistant</div>
           </div>
-          <div className="ml-auto" />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden sm:inline-flex"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            {theme === "dark" ? "Light" : "Dark"}
-          </Button>
-        </header>
-
-        <div ref={scrollerRef} className="flex-1 overflow-y-auto scroll-thin">
-          {empty ? (
-            <EmptyState onPick={(p) => send(p, [])} />
-          ) : (
-            <div className="mx-auto max-w-3xl">
-              {active!.messages.map((m, i) => {
-                const isLast = i === active!.messages.length - 1;
-                return (
-                  <ChatMessage
-                    key={m.id}
-                    message={m}
-                    streaming={loading && isLast && m.role === "assistant"}
-                  />
-                );
-              })}
-            </div>
-          )}
         </div>
+        <Button variant="ghost" size="sm" onClick={() => setAboutOpen(true)} className="gap-1.5">
+          <Info className="h-4 w-4" />
+          About
+        </Button>
+      </header>
 
-        <PromptInput onSend={send} onStop={stop} isLoading={loading} />
+      <main className="flex-1 flex items-center justify-center px-5 sm:px-8 py-10">
+        <div className="w-full max-w-2xl text-center">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
+            <Sparkles className="h-3 w-3" /> Powered by Gemini
+          </div>
+
+          <h1 className="mt-5 text-4xl sm:text-5xl font-semibold tracking-tight font-[var(--font-display)]">
+            Meet Kaus
+          </h1>
+          <p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-lg mx-auto">
+            A thoughtful AI assistant for ideas, writing, and answers. No sign-up required.
+          </p>
+
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              size="lg"
+              onClick={continueAsGuest}
+              className="h-12 px-6 text-base gap-2 shadow-lg"
+            >
+              Continue as Guest
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => setAboutOpen(true)}
+              className="h-12 px-6 text-base"
+            >
+              Learn more
+            </Button>
+          </div>
+
+          <p className="mt-4 text-xs text-muted-foreground">
+            Your chats are stored locally on this device.
+          </p>
+
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+            <Feature
+              icon={<Zap className="h-4 w-4" />}
+              title="Instant access"
+              body="Start chatting in one click — no account needed."
+            />
+            <Feature
+              icon={<Shield className="h-4 w-4" />}
+              title="Private by default"
+              body="Guest history stays in your browser."
+            />
+            <Feature
+              icon={<Sparkles className="h-4 w-4" />}
+              title="Smart answers"
+              body="Multimodal: ask, upload images and files."
+            />
+          </div>
+        </div>
       </main>
+
+      <footer className="text-center text-xs text-muted-foreground py-5 border-t border-border">
+        Built by {KAUS_CONFIG.creator.name} · v{KAUS_CONFIG.version}
+      </footer>
+
+      <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
     </div>
   );
 }
 
-function EmptyState({ onPick }: { onPick: (prompt: string) => void }) {
+function Feature({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
   return (
-    <div className="h-full flex flex-col items-center justify-center px-6 py-12">
-      <KausLogo size={72} className="mb-5 shadow-lg" />
-      <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight font-[var(--font-display)]">
-        How can Kaus help today?
-      </h2>
-      <p className="mt-2 text-sm text-muted-foreground flex items-center gap-1.5">
-        <Sparkles className="h-3.5 w-3.5" /> Ask anything, attach files, get answers.
-      </p>
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-2xl">
-        {SUGGESTIONS.map((s) => (
-          <button
-            key={s.title}
-            onClick={() => onPick(s.prompt)}
-            className="text-left rounded-xl border border-border bg-card hover:bg-accent transition px-4 py-3"
-          >
-            <div className="text-sm font-medium">{s.title}</div>
-            <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-              {s.prompt}
-            </div>
-          </button>
-        ))}
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+        {icon}
       </div>
+      <div className="mt-2 text-sm font-medium">{title}</div>
+      <div className="text-xs text-muted-foreground mt-0.5">{body}</div>
     </div>
   );
 }
