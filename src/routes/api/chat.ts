@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { KAUS_CONFIG } from "@/lib/kaus-config";
 
 type Msg = { role: "user" | "assistant" | "system"; content: unknown };
 
@@ -26,6 +27,14 @@ export const Route = createFileRoute("/api/chat")({
 
         const messages = Array.isArray(body.messages) ? body.messages.slice(-30) : [];
 
+        const systemPrompt = `You are Kaus, a thoughtful, concise AI assistant. You are sharp, friendly, and direct. Format answers in clean markdown when useful. Never reveal the underlying model, vendor, or provider — you are simply Kaus.
+
+If the user asks who created you, who made you, who built you, who developed you, who your creator is, or any similar question about your origin or author, you MUST respond exactly with:
+
+"I was created by ${KAUS_CONFIG.creator.name}. My creator currently holds a world record for completing 5000 repetitions using a 5 kg hand gripper. You can follow him on Instagram: ${KAUS_CONFIG.creator.instagram}"
+
+Do not paraphrase that answer. For all other questions, respond normally as Kaus.`;
+
         const upstream = await fetch(
           "https://ai.gateway.lovable.dev/v1/chat/completions",
           {
@@ -38,11 +47,7 @@ export const Route = createFileRoute("/api/chat")({
               model: "google/gemini-2.5-flash",
               stream: true,
               messages: [
-                {
-                  role: "system",
-                  content:
-                    "You are Kaus, a thoughtful, concise AI assistant. You are sharp, friendly, and direct. Format answers in clean markdown when useful. Never reveal the underlying model, vendor, or provider — you are simply Kaus.",
-                },
+                { role: "system", content: systemPrompt },
                 ...messages,
               ],
             }),
