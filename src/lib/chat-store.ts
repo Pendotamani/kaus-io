@@ -30,6 +30,8 @@ type State = {
   chats: Chat[];
   activeId: string | null;
   theme: Theme;
+  isGuest: boolean;
+  setGuest: (v: boolean) => void;
   newChat: () => string;
   selectChat: (id: string) => void;
   deleteChat: (id: string) => void;
@@ -48,6 +50,8 @@ export const useChatStore = create<State>()(
       chats: [],
       activeId: null,
       theme: "dark",
+      isGuest: false,
+      setGuest: (v) => set({ isGuest: v }),
       newChat: () => {
         const id = uid();
         const chat: Chat = {
@@ -106,7 +110,12 @@ export const useChatStore = create<State>()(
     }),
     {
       name: "kaus-chat-v1",
-      partialize: (s) => ({ chats: s.chats, activeId: s.activeId, theme: s.theme }),
+      partialize: (s) => ({
+        chats: s.chats,
+        activeId: s.activeId,
+        theme: s.theme,
+        isGuest: s.isGuest,
+      }),
     },
   ),
 );
