@@ -44,6 +44,32 @@ type State = {
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
+// Clear guest session on fresh app open (new tab / app restart).
+// Uses sessionStorage as a "this tab is alive" flag — when missing, we treat
+// it as a cold start and wipe any persisted guest chats before zustand
+// rehydrates. Theme preference is preserved.
+if (typeof window !== "undefined") {
+  try {
+    const SESSION_FLAG = "kaus-session-active";
+    const PERSIST_KEY = "kaus-chat-v1";
+    if (!sessionStorage.getItem(SESSION_FLAG)) {
+      const raw = localStorage.getItem(PERSIST_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.state?.isGuest) {
+          parsed.state.chats = [];
+          parsed.state.activeId = null;
+          parsed.state.isGuest = false;
+          localStorage.setItem(PERSIST_KEY, JSON.stringify(parsed));
+        }
+      }
+      sessionStorage.setItem(SESSION_FLAG, "1");
+    }
+  } catch {
+    // ignore storage access errors (private mode, etc.)
+  }
+}
+
 export const useChatStore = create<State>()(
   persist(
     (set, get) => ({
