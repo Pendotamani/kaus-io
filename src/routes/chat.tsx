@@ -48,7 +48,6 @@ function KausChat() {
     theme,
     setTheme,
     isGuest,
-    setGuest,
   } = useChatStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
