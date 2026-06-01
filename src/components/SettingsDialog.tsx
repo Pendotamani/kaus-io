@@ -1,4 +1,4 @@
-import { Moon, Sun, Trash2, Instagram, ShieldCheck } from "lucide-react";
+import { Moon, Sun, Trash2, Instagram, ShieldCheck, LogOut } from "lucide-react";
 import {
   Dialog,
   DialogContent,
