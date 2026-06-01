@@ -134,6 +134,16 @@ export const useChatStore = create<State>()(
         }
       },
       clearAll: () => set({ chats: [], activeId: null }),
+      logout: () => {
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.removeItem("kaus-session-active");
+          } catch {
+            // ignore
+          }
+        }
+        set({ chats: [], activeId: null, isGuest: false });
+      },
     }),
     {
       name: "kaus-chat-v1",
