@@ -80,6 +80,21 @@ export function SettingsDialog({
               <Trash2 className="h-4 w-4" />
               Clear Chat History
             </Button>
+            {isGuest && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2 mt-2"
+                onClick={() => {
+                  logout();
+                  toast.success("Signed out of Guest Mode");
+                  onOpenChange(false);
+                }}
+              >
+                <LogOut className="h-4 w-4" />
+                Exit Guest Mode
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
