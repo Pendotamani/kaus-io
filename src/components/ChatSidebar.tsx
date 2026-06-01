@@ -147,6 +147,19 @@ export function ChatSidebar({
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             {theme === "dark" ? "Light mode" : "Dark mode"}
           </Button>
+          {isGuest && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+              onClick={() => {
+                onClose();
+                logout();
+              }}
+            >
+              <LogOut className="h-4 w-4" />
+              Exit Guest Mode
+            </Button>
+          )}
         </div>
       </aside>
     </>
