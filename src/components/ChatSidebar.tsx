@@ -1,4 +1,4 @@
-import { Plus, MessageSquare, Trash2, X, Moon, Sun, ShieldCheck, Info, Settings as SettingsIcon } from "lucide-react";
+import { Plus, MessageSquare, Trash2, X, Moon, Sun, ShieldCheck, Info, Settings as SettingsIcon, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { KausLogo } from "./KausLogo";
@@ -16,7 +16,7 @@ export function ChatSidebar({
   onOpenAbout?: () => void;
   onOpenSettings?: () => void;
 }) {
-  const { chats, activeId, selectChat, deleteChat, newChat, theme, setTheme, isGuest } =
+  const { chats, activeId, selectChat, deleteChat, newChat, theme, setTheme, isGuest, logout } =
     useChatStore();
 
   return (
@@ -147,6 +147,19 @@ export function ChatSidebar({
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             {theme === "dark" ? "Light mode" : "Dark mode"}
           </Button>
+          {isGuest && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+              onClick={() => {
+                onClose();
+                logout();
+              }}
+            >
+              <LogOut className="h-4 w-4" />
+              Exit Guest Mode
+            </Button>
+          )}
         </div>
       </aside>
     </>

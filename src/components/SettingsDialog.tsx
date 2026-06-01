@@ -1,4 +1,4 @@
-import { Moon, Sun, Trash2, Instagram, ShieldCheck } from "lucide-react";
+import { Moon, Sun, Trash2, Instagram, ShieldCheck, LogOut } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ export function SettingsDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { theme, setTheme, clearAll } = useChatStore();
+  const { theme, setTheme, clearAll, logout, isGuest } = useChatStore();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -80,6 +80,21 @@ export function SettingsDialog({
               <Trash2 className="h-4 w-4" />
               Clear Chat History
             </Button>
+            {isGuest && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2 mt-2"
+                onClick={() => {
+                  logout();
+                  toast.success("Signed out of Guest Mode");
+                  onOpenChange(false);
+                }}
+              >
+                <LogOut className="h-4 w-4" />
+                Exit Guest Mode
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
