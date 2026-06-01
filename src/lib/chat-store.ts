@@ -40,6 +40,7 @@ type State = {
   updateLastAssistant: (chatId: string, text: string) => void;
   setTheme: (t: Theme) => void;
   clearAll: () => void;
+  logout: () => void;
 };
 
 const uid = () => Math.random().toString(36).slice(2, 10);
