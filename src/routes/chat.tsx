@@ -56,13 +56,8 @@ function KausChat() {
   const abortRef = useRef<AbortController | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  const navigate = Route.useNavigate();
-  // Guest Mode is temporary. If the user lands on /chat without an active
-  // guest session (e.g. after closing & reopening the app), send them back
-  // to the welcome screen.
-  useEffect(() => {
-    if (!isGuest) navigate({ to: "/" });
-  }, [isGuest, navigate]);
+  // Guest state persists in localStorage; refresh keeps the user in chat.
+  // The user exits via the Logout button (handled by chat-store.logout()).
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");

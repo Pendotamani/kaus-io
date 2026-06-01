@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, Sparkles, Shield, Zap, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { KausLogo } from "@/components/KausLogo";
@@ -29,7 +29,13 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const navigate = useNavigate();
   const [aboutOpen, setAboutOpen] = useState(false);
-  const { setGuest } = useChatStore();
+  const { setGuest, isGuest } = useChatStore();
+
+  // If guest mode is already active (restored from localStorage), skip the
+  // welcome screen and go straight to the chat interface.
+  useEffect(() => {
+    if (isGuest) navigate({ to: "/chat" });
+  }, [isGuest, navigate]);
 
   const continueAsGuest = () => {
     setGuest(true);
