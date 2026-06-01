@@ -18,18 +18,6 @@ export function ChatSidebar({
 }) {
   const { chats, activeId, selectChat, deleteChat, newChat, theme, setTheme, isGuest, logout } =
     useChatStore();
-  open,
-  onClose,
-  onOpenAbout,
-  onOpenSettings,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onOpenAbout?: () => void;
-  onOpenSettings?: () => void;
-}) {
-  const { chats, activeId, selectChat, deleteChat, newChat, theme, setTheme, isGuest } =
-    useChatStore();
 
   return (
     <>
