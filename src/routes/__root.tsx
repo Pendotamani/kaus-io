@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
+import kausLogo from "../assets/kaus-logo.jpg";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -85,17 +86,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Kaus is a fast, thoughtful AI assistant." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Kaus — AI Assistant" },
       { name: "twitter:description", content: "Kaus is a fast, thoughtful AI assistant." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/8dd71dd5-47a3-4e9d-b090-2d480e3140f1" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/8dd71dd5-47a3-4e9d-b090-2d480e3140f1" },
+      { property: "og:image", content: kausLogo },
+      { name: "twitter:image", content: kausLogo },
+      { name: "theme-color", content: "#0a0a0a" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/jpeg", href: kausLogo },
+      { rel: "apple-touch-icon", href: kausLogo },
     ],
   }),
   shellComponent: RootShell,
