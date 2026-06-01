@@ -19,7 +19,7 @@ export function SettingsDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { theme, setTheme, clearAll } = useChatStore();
+  const { theme, setTheme, clearAll, logout, isGuest } = useChatStore();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
