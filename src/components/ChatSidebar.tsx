@@ -1,4 +1,4 @@
-import { Plus, MessageSquare, Trash2, X, Moon, Sun, ShieldCheck, Info, Settings as SettingsIcon } from "lucide-react";
+import { Plus, MessageSquare, Trash2, X, Moon, Sun, ShieldCheck, Info, Settings as SettingsIcon, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { KausLogo } from "./KausLogo";
@@ -6,6 +6,18 @@ import { useChatStore } from "@/lib/chat-store";
 import { cn } from "@/lib/utils";
 
 export function ChatSidebar({
+  open,
+  onClose,
+  onOpenAbout,
+  onOpenSettings,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onOpenAbout?: () => void;
+  onOpenSettings?: () => void;
+}) {
+  const { chats, activeId, selectChat, deleteChat, newChat, theme, setTheme, isGuest, logout } =
+    useChatStore();
   open,
   onClose,
   onOpenAbout,
