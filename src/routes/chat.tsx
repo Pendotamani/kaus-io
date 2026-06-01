@@ -57,10 +57,13 @@ function KausChat() {
   const abortRef = useRef<AbortController | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  // Anyone reaching /chat directly is treated as a guest by default.
+  const navigate = Route.useNavigate();
+  // Guest Mode is temporary. If the user lands on /chat without an active
+  // guest session (e.g. after closing & reopening the app), send them back
+  // to the welcome screen.
   useEffect(() => {
-    if (!isGuest) setGuest(true);
-  }, [isGuest, setGuest]);
+    if (!isGuest) navigate({ to: "/" });
+  }, [isGuest, navigate]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
