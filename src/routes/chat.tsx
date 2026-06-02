@@ -58,16 +58,8 @@ function KausChat() {
   useEffect(() => {
     document.documentElement.classList.remove("dark");
   }, []);
-  const [loading, setLoading] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
-  const scrollerRef = useRef<HTMLDivElement>(null);
 
-  // Guest state persists in localStorage; refresh keeps the user in chat.
-  // The user exits via the Logout button (handled by chat-store.logout()).
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
 
   const active = chats.find((c) => c.id === activeId) ?? null;
 
