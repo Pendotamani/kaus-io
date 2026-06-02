@@ -52,17 +52,6 @@ export function SettingsDialog({
             <span className="text-sm text-muted-foreground">v{KAUS_CONFIG.version}</span>
           </Row>
 
-          <Row label="Theme">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="gap-2"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              {theme === "dark" ? "Light" : "Dark"}
-            </Button>
-          </Row>
 
           <div className="pt-2 border-t border-border">
             <Button
