@@ -104,10 +104,11 @@ export const useChatStore = create<State>()(
             return { ...c, messages };
           }),
         })),
-      setTheme: (t) => {
-        set({ theme: t });
+      setTheme: () => {
+        // Theme is locked to light mode by product decision.
+        set({ theme: "light" });
         if (typeof document !== "undefined") {
-          document.documentElement.classList.toggle("dark", t === "dark");
+          document.documentElement.classList.remove("dark");
         }
       },
       clearAll: () => set({ chats: [], activeId: null }),
