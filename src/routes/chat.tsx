@@ -227,14 +227,6 @@ function KausChat() {
             >
               <SettingsIcon className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden sm:inline-flex"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            >
-              {theme === "dark" ? "Light" : "Dark"}
-            </Button>
           </div>
         </header>
 
