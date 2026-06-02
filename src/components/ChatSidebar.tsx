@@ -1,4 +1,17 @@
-import { Plus, MessageSquare, Trash2, X, Moon, Sun, ShieldCheck, Info, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  Plus,
+  MessageSquare,
+  Trash2,
+  X,
+  ShieldCheck,
+  Info,
+  Settings as SettingsIcon,
+  LogOut,
+  Search,
+  Pencil,
+  Check,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { KausLogo } from "./KausLogo";
@@ -16,8 +29,29 @@ export function ChatSidebar({
   onOpenAbout?: () => void;
   onOpenSettings?: () => void;
 }) {
-  const { chats, activeId, selectChat, deleteChat, newChat, theme, setTheme, isGuest, logout } =
+  const { chats, activeId, selectChat, deleteChat, newChat, renameChat, isGuest, logout } =
     useChatStore();
+
+  const [query, setQuery] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftTitle, setDraftTitle] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return chats;
+    return chats.filter(
+      (c) =>
+        c.title.toLowerCase().includes(q) ||
+        c.messages.some((m) => m.content.toLowerCase().includes(q)),
+    );
+  }, [chats, query]);
+
+  const commitRename = (id: string) => {
+    const title = draftTitle.trim();
+    if (title) renameChat(id, title.slice(0, 80));
+    setEditingId(null);
+    setDraftTitle("");
+  };
 
   return (
     <>
@@ -63,7 +97,7 @@ export function ChatSidebar({
           </div>
         )}
 
-        <div className="p-3">
+        <div className="p-3 space-y-2">
           <Button
             onClick={() => {
               newChat();
@@ -75,46 +109,112 @@ export function ChatSidebar({
             <Plus className="h-4 w-4" />
             New chat
           </Button>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search chats"
+              className="w-full rounded-md border border-border bg-card pl-8 pr-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring/40"
+            />
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto scroll-thin px-2 pb-2">
           <div className="px-2 py-1 text-[11px] uppercase tracking-wider text-muted-foreground">
             Recent
           </div>
-          {chats.length === 0 && (
-            <div className="px-3 py-6 text-sm text-muted-foreground">No chats yet.</div>
+          {filtered.length === 0 && (
+            <div className="px-3 py-6 text-sm text-muted-foreground">
+              {chats.length === 0 ? "No chats yet." : "No matches."}
+            </div>
           )}
           <ul className="space-y-0.5">
-            {chats.map((c) => (
-              <li key={c.id}>
-                <button
-                  onClick={() => {
-                    selectChat(c.id);
-                    onClose();
-                  }}
-                  className={cn(
-                    "group w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-left",
-                    "hover:bg-accent hover:text-accent-foreground transition",
-                    activeId === c.id && "bg-accent text-accent-foreground",
-                  )}
-                >
-                  <MessageSquare className="h-4 w-4 shrink-0 opacity-70" />
-                  <span className="flex-1 truncate">{c.title}</span>
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteChat(c.id);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-muted"
-                    aria-label="Delete chat"
+            {filtered.map((c) => {
+              const isEditing = editingId === c.id;
+              return (
+                <li key={c.id}>
+                  <div
+                    className={cn(
+                      "group w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm",
+                      "hover:bg-accent hover:text-accent-foreground transition",
+                      activeId === c.id && "bg-accent text-accent-foreground",
+                    )}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </span>
-                </button>
-              </li>
-            ))}
+                    <MessageSquare className="h-4 w-4 shrink-0 opacity-70" />
+                    {isEditing ? (
+                      <input
+                        autoFocus
+                        value={draftTitle}
+                        onChange={(e) => setDraftTitle(e.target.value)}
+                        onBlur={() => commitRename(c.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") commitRename(c.id);
+                          if (e.key === "Escape") {
+                            setEditingId(null);
+                            setDraftTitle("");
+                          }
+                        }}
+                        className="flex-1 bg-transparent outline-none border-b border-border text-sm"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          selectChat(c.id);
+                          onClose();
+                        }}
+                        className="flex-1 truncate text-left"
+                      >
+                        {c.title}
+                      </button>
+                    )}
+                    {isEditing ? (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          commitRename(c.id);
+                        }}
+                        className="p-1 rounded hover:bg-muted"
+                        aria-label="Save"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </span>
+                    ) : (
+                      <>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingId(c.id);
+                            setDraftTitle(c.title);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-muted"
+                          aria-label="Rename chat"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </span>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteChat(c.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-muted"
+                          aria-label="Delete chat"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
 
@@ -139,14 +239,6 @@ export function ChatSidebar({
               Settings
             </Button>
           )}
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            {theme === "dark" ? "Light mode" : "Dark mode"}
-          </Button>
           {isGuest && (
             <Button
               variant="ghost"
