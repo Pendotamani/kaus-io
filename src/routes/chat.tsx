@@ -69,13 +69,7 @@ function KausChat() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [active?.messages.length, loading]);
 
-  const send = async (text: string, attachments: Attachment[]) => {
-    let chatId = activeId;
-    if (!chatId) chatId = newChat();
-
-    const userMsg = makeMessage("user", text, attachments.length ? attachments : undefined);
-    addMessage(chatId, userMsg);
-
+  const runStream = async (chatId: string) => {
     const history = (useChatStore.getState().chats.find((c) => c.id === chatId)?.messages ??
       []) as Message[];
 
@@ -146,7 +140,7 @@ function KausChat() {
             const delta = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (delta) {
               acc += delta;
-              updateLastAssistant(chatId!, acc);
+              updateLastAssistant(chatId, acc);
             }
           } catch {
             buffer = line + "\n" + buffer;
@@ -156,14 +150,14 @@ function KausChat() {
       }
 
       if (!acc) {
-        updateLastAssistant(chatId!, "I couldn't generate a response. Please try again.");
+        updateLastAssistant(chatId, "I couldn't generate a response. Please try again.");
       }
     } catch (e) {
       const message = e instanceof Error ? e.message : "Something went wrong.";
       if ((e as Error).name === "AbortError") {
-        updateLastAssistant(chatId!, "_Response stopped._");
+        updateLastAssistant(chatId, "_Response stopped._");
       } else {
-        updateLastAssistant(chatId!, `**Error:** ${message}`);
+        updateLastAssistant(chatId, `**Error:** ${message}`);
         toast.error(message);
       }
     } finally {
@@ -171,6 +165,21 @@ function KausChat() {
       abortRef.current = null;
     }
   };
+
+  const send = async (text: string, attachments: Attachment[]) => {
+    let chatId = activeId;
+    if (!chatId) chatId = newChat();
+    const userMsg = makeMessage("user", text, attachments.length ? attachments : undefined);
+    addMessage(chatId, userMsg);
+    await runStream(chatId);
+  };
+
+  const regenerate = async () => {
+    if (!activeId || loading) return;
+    removeLastAssistant(activeId);
+    await runStream(activeId);
+  };
+
 
   const stop = () => {
     abortRef.current?.abort();
