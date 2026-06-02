@@ -90,7 +90,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:description", content: "Kaus is a fast, thoughtful AI assistant." },
       { property: "og:image", content: kausLogo },
       { name: "twitter:image", content: kausLogo },
-      { name: "theme-color", content: "#0a0a0a" },
+      { name: "theme-color", content: "#ffffff" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

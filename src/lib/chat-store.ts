@@ -38,6 +38,7 @@ type State = {
   renameChat: (id: string, title: string) => void;
   addMessage: (chatId: string, msg: Message) => void;
   updateLastAssistant: (chatId: string, text: string) => void;
+  removeLastAssistant: (chatId: string) => void;
   setTheme: (t: Theme) => void;
   clearAll: () => void;
   logout: () => void;
@@ -53,7 +54,7 @@ export const useChatStore = create<State>()(
     (set, get) => ({
       chats: [],
       activeId: null,
-      theme: "dark",
+      theme: "light",
       isGuest: false,
       setGuest: (v) => set({ isGuest: v }),
       newChat: () => {
@@ -104,10 +105,22 @@ export const useChatStore = create<State>()(
             return { ...c, messages };
           }),
         })),
-      setTheme: (t) => {
-        set({ theme: t });
+      removeLastAssistant: (chatId) =>
+        set((s) => ({
+          chats: s.chats.map((c) => {
+            if (c.id !== chatId) return c;
+            const messages = [...c.messages];
+            if (messages[messages.length - 1]?.role === "assistant") {
+              messages.pop();
+            }
+            return { ...c, messages };
+          }),
+        })),
+      setTheme: () => {
+        // Theme is locked to light mode by product decision.
+        set({ theme: "light" });
         if (typeof document !== "undefined") {
-          document.documentElement.classList.toggle("dark", t === "dark");
+          document.documentElement.classList.remove("dark");
         }
       },
       clearAll: () => set({ chats: [], activeId: null }),

@@ -1,4 +1,4 @@
-import { Moon, Sun, Trash2, Instagram, ShieldCheck, LogOut } from "lucide-react";
+import { Trash2, Instagram, ShieldCheck, LogOut } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ export function SettingsDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { theme, setTheme, clearAll, logout, isGuest } = useChatStore();
+  const { clearAll, logout, isGuest } = useChatStore();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -52,17 +52,6 @@ export function SettingsDialog({
             <span className="text-sm text-muted-foreground">v{KAUS_CONFIG.version}</span>
           </Row>
 
-          <Row label="Theme">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="gap-2"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              {theme === "dark" ? "Light" : "Dark"}
-            </Button>
-          </Row>
 
           <div className="pt-2 border-t border-border">
             <Button
