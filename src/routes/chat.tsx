@@ -45,13 +45,19 @@ function KausChat() {
     newChat,
     addMessage,
     updateLastAssistant,
-    theme,
-    setTheme,
     isGuest,
   } = useChatStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  // Light theme is enforced app-wide.
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+  }, []);
   const [loading, setLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
