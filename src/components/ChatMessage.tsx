@@ -1,14 +1,36 @@
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { User, FileText, Image as ImageIcon } from "lucide-react";
+import { User, FileText, Image as ImageIcon, Copy, Check, RefreshCw } from "lucide-react";
 import { KausLogo } from "./KausLogo";
 import type { Message } from "@/lib/chat-store";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
-export function ChatMessage({ message, streaming }: { message: Message; streaming?: boolean }) {
+export function ChatMessage({
+  message,
+  streaming,
+  onRegenerate,
+}: {
+  message: Message;
+  streaming?: boolean;
+  onRegenerate?: () => void;
+}) {
   const isUser = message.role === "user";
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("Couldn't copy");
+    }
+  };
+
   return (
-    <div className={cn("flex gap-3 sm:gap-4 px-3 sm:px-6 py-5", !isUser && "bg-muted/30")}>
+    <div className={cn("group flex gap-3 sm:gap-4 px-3 sm:px-6 py-5", !isUser && "bg-muted/30")}>
       <div className="shrink-0 pt-0.5">
         {isUser ? (
           <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-accent-foreground">
@@ -68,6 +90,30 @@ export function ChatMessage({ message, streaming }: { message: Message; streamin
             <span className="inline-block w-1.5 h-4 align-middle bg-foreground/70 ml-0.5 animate-pulse" />
           )}
         </div>
+        {!isUser && !streaming && message.content && (
+          <div className="mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+            <button
+              type="button"
+              onClick={copy}
+              className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              aria-label="Copy message"
+            >
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? "Copied" : "Copy"}
+            </button>
+            {onRegenerate && (
+              <button
+                type="button"
+                onClick={onRegenerate}
+                className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                aria-label="Regenerate response"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Regenerate
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
