@@ -91,6 +91,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image", content: kausLogo },
       { name: "twitter:image", content: kausLogo },
       { name: "theme-color", content: "#ffffff" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bccd6bf9-1e15-4b00-a9f2-309f424f0811/id-preview-a366dcfc--6680c783-1f02-4c16-9f34-cd5022ab525d.lovable.app-1780389730554.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bccd6bf9-1e15-4b00-a9f2-309f424f0811/id-preview-a366dcfc--6680c783-1f02-4c16-9f34-cd5022ab525d.lovable.app-1780389730554.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
