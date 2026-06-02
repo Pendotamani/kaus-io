@@ -252,7 +252,11 @@ function KausChat() {
                     key={m.id}
                     message={m}
                     streaming={loading && isLast && m.role === "assistant"}
+                    onRegenerate={
+                      !loading && isLast && m.role === "assistant" ? regenerate : undefined
+                    }
                   />
+
                 );
               })}
             </div>
