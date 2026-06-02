@@ -38,6 +38,7 @@ type State = {
   renameChat: (id: string, title: string) => void;
   addMessage: (chatId: string, msg: Message) => void;
   updateLastAssistant: (chatId: string, text: string) => void;
+  removeLastAssistant: (chatId: string) => void;
   setTheme: (t: Theme) => void;
   clearAll: () => void;
   logout: () => void;
