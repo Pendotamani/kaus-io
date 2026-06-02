@@ -53,7 +53,7 @@ export const useChatStore = create<State>()(
     (set, get) => ({
       chats: [],
       activeId: null,
-      theme: "dark",
+      theme: "light",
       isGuest: false,
       setGuest: (v) => set({ isGuest: v }),
       newChat: () => {
