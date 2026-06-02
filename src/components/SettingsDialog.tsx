@@ -1,4 +1,4 @@
-import { Moon, Sun, Trash2, Instagram, ShieldCheck, LogOut } from "lucide-react";
+import { Trash2, Instagram, ShieldCheck, LogOut } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ export function SettingsDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { theme, setTheme, clearAll, logout, isGuest } = useChatStore();
+  const { clearAll, logout, isGuest } = useChatStore();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
