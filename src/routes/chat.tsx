@@ -45,6 +45,7 @@ function KausChat() {
     newChat,
     addMessage,
     updateLastAssistant,
+    removeLastAssistant,
     isGuest,
   } = useChatStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
