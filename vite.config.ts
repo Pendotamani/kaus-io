@@ -1,12 +1,12 @@
 // Vercel-targeted TanStack Start SSR build.
 //
-// The Lovable wrapper is retained because it bundles the TanStack Start
-// plugin, React plugin, Tailwind plugin, tsconfig paths, env injection,
-// and the nitro deploy plugin. We override the nitro preset to Vercel
-// so the build emits `.vercel/output/` which Vercel auto-detects.
+// The Lovable wrapper provides the TanStack Start, React, Tailwind, and
+// nitro deploy plugins. We override the nitro preset to `vercel` and
+// restore the preset's standard output layout (`.vercel/output/...`) so
+// Vercel auto-detects the Build Output API artifacts.
 //
-// NITRO_PRESET can be overridden at build-time (e.g. NITRO_PRESET=node-server
-// bun run build) without editing this file.
+// NITRO_PRESET can be overridden at build time, e.g.
+//   NITRO_PRESET=node-server bun run build
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
@@ -15,5 +15,10 @@ export default defineConfig({
   },
   nitro: {
     preset: process.env.NITRO_PRESET ?? "vercel",
+    output: {
+      dir: ".vercel/output",
+      serverDir: ".vercel/output/functions/__server.func",
+      publicDir: ".vercel/output/static",
+    },
   },
 });
