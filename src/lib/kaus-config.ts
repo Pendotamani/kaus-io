@@ -9,10 +9,12 @@ export const KAUS_CONFIG = {
     name: "Pendota Mani",
     instagram: "@mvnixm",
     instagramUrl: "https://instagram.com/mvnixm",
+    supportEmail: "pendotamani7989383589@gmail.com",
+    about: "Kaus AI is an intelligent assistant created by Pendota Mani.",
     achievement:
       "Currently holds a world record for completing 5000 repetitions using a 5 kg hand gripper.",
   },
-  features: ["Gemini Powered", "Mobile Friendly", "Fast and Secure"],
+  features: ["Fast Streaming Replies", "Mobile Friendly", "Private & Secure"],
   welcomeMessage: "Hello! I'm Kaus, your AI assistant. How can I help you today?",
   showCreatorBranding: true,
 } as const;
