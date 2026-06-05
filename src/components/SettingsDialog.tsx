@@ -1,4 +1,4 @@
-import { Trash2, Instagram, ShieldCheck, LogOut } from "lucide-react";
+import { Trash2, Instagram } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useChatStore } from "@/lib/chat-store";
 import { KAUS_CONFIG } from "@/lib/kaus-config";
 import { toast } from "sonner";
@@ -19,7 +18,7 @@ export function SettingsDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { clearAll, logout, isGuest } = useChatStore();
+  const { clearAll } = useChatStore();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -30,12 +29,6 @@ export function SettingsDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          <Row label="Guest Mode">
-            <Badge variant="secondary" className="gap-1">
-              <ShieldCheck className="h-3 w-3" /> Active
-            </Badge>
-          </Row>
-
           <Row label="Creator">
             <a
               href={KAUS_CONFIG.creator.instagramUrl}
@@ -51,7 +44,6 @@ export function SettingsDialog({
           <Row label="App Version">
             <span className="text-sm text-muted-foreground">v{KAUS_CONFIG.version}</span>
           </Row>
-
 
           <div className="pt-2 border-t border-border">
             <Button
@@ -69,21 +61,6 @@ export function SettingsDialog({
               <Trash2 className="h-4 w-4" />
               Clear Chat History
             </Button>
-            {isGuest && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-2 mt-2"
-                onClick={() => {
-                  logout();
-                  toast.success("Signed out of Guest Mode");
-                  onOpenChange(false);
-                }}
-              >
-                <LogOut className="h-4 w-4" />
-                Exit Guest Mode
-              </Button>
-            )}
           </div>
         </div>
       </DialogContent>

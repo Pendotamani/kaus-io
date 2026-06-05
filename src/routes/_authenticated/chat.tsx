@@ -1,8 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Menu, Sparkles, ShieldCheck, Info, Settings as SettingsIcon } from "lucide-react";
+import { Menu, Sparkles, Info, Settings as SettingsIcon, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { ChatMessage } from "@/components/ChatMessage";
 import { PromptInput } from "@/components/PromptInput";
@@ -18,14 +17,11 @@ import {
 import { KAUS_CONFIG } from "@/lib/kaus-config";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/chat")({
+export const Route = createFileRoute("/_authenticated/chat")({
   head: () => ({
     meta: [
       { title: "Chat — Kaus" },
-      {
-        name: "description",
-        content: "Chat with Kaus, your thoughtful AI assistant.",
-      },
+      { name: "description", content: "Chat with Kaus, your thoughtful AI assistant." },
     ],
   }),
   component: KausChat,
@@ -46,8 +42,8 @@ function KausChat() {
     addMessage,
     updateLastAssistant,
     removeLastAssistant,
-    isGuest,
   } = useChatStore();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -55,12 +51,9 @@ function KausChat() {
   const abortRef = useRef<AbortController | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  // Light theme is enforced app-wide.
   useEffect(() => {
     document.documentElement.classList.remove("dark");
   }, []);
-
-
 
   const active = chats.find((c) => c.id === activeId) ?? null;
 
@@ -180,7 +173,6 @@ function KausChat() {
     await runStream(activeId);
   };
 
-
   const stop = () => {
     abortRef.current?.abort();
   };
@@ -194,6 +186,7 @@ function KausChat() {
         onClose={() => setSidebarOpen(false)}
         onOpenAbout={() => setAboutOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenProfile={() => navigate({ to: "/profile" })}
       />
 
       <main className="flex-1 flex flex-col min-w-0">
@@ -212,30 +205,16 @@ function KausChat() {
             <h1 className="font-semibold tracking-tight truncate">
               {active?.title || "Kaus"}
             </h1>
-            {isGuest && (
-              <Badge variant="secondary" className="gap-1 ml-1 hidden xs:inline-flex sm:inline-flex">
-                <ShieldCheck className="h-3 w-3" /> Guest Mode
-              </Badge>
-            )}
           </div>
           <div className="ml-auto flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
-              onClick={() => setAboutOpen(true)}
-              aria-label="About"
-            >
+            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setAboutOpen(true)} aria-label="About">
               <Info className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
-              onClick={() => setSettingsOpen(true)}
-              aria-label="Settings"
-            >
+            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setSettingsOpen(true)} aria-label="Settings">
               <SettingsIcon className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate({ to: "/profile" })} aria-label="Profile">
+              <UserIcon className="h-4 w-4" />
             </Button>
           </div>
         </header>
@@ -252,11 +231,8 @@ function KausChat() {
                     key={m.id}
                     message={m}
                     streaming={loading && isLast && m.role === "assistant"}
-                    onRegenerate={
-                      !loading && isLast && m.role === "assistant" ? regenerate : undefined
-                    }
+                    onRegenerate={!loading && isLast && m.role === "assistant" ? regenerate : undefined}
                   />
-
                 );
               })}
             </div>
