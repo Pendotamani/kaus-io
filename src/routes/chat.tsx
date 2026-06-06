@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Menu, Sparkles, Info, Settings as SettingsIcon, User as UserIcon } from "lucide-react";
+import { Menu, Sparkles, Info, Settings as SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { ChatMessage } from "@/components/ChatMessage";
@@ -17,7 +17,8 @@ import {
 import { KAUS_CONFIG } from "@/lib/kaus-config";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/chat")({
+export const Route = createFileRoute("/chat")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Chat — Kaus" },
@@ -43,7 +44,6 @@ function KausChat() {
     updateLastAssistant,
     removeLastAssistant,
   } = useChatStore();
-  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -53,6 +53,11 @@ function KausChat() {
 
   useEffect(() => {
     document.documentElement.classList.remove("dark");
+    try {
+      localStorage.setItem("kaus-guest", "1");
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const active = chats.find((c) => c.id === activeId) ?? null;
@@ -186,7 +191,6 @@ function KausChat() {
         onClose={() => setSidebarOpen(false)}
         onOpenAbout={() => setAboutOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
-        onOpenProfile={() => navigate({ to: "/profile" })}
       />
 
       <main className="flex-1 flex flex-col min-w-0">
@@ -212,9 +216,6 @@ function KausChat() {
             </Button>
             <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setSettingsOpen(true)} aria-label="Settings">
               <SettingsIcon className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate({ to: "/profile" })} aria-label="Profile">
-              <UserIcon className="h-4 w-4" />
             </Button>
           </div>
         </header>

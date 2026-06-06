@@ -6,36 +6,28 @@ import {
   X,
   Info,
   Settings as SettingsIcon,
-  LogOut,
   Search,
   Pencil,
   Check,
-  User as UserIcon,
 } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { KausLogo } from "./KausLogo";
 import { useChatStore } from "@/lib/chat-store";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 export function ChatSidebar({
   open,
   onClose,
   onOpenAbout,
   onOpenSettings,
-  onOpenProfile,
 }: {
   open: boolean;
   onClose: () => void;
   onOpenAbout?: () => void;
   onOpenSettings?: () => void;
-  onOpenProfile?: () => void;
 }) {
-  const { chats, activeId, selectChat, deleteChat, newChat, renameChat, clearAll } =
+  const { chats, activeId, selectChat, deleteChat, newChat, renameChat } =
     useChatStore();
-  const navigate = useNavigate();
 
   const [query, setQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -56,13 +48,6 @@ export function ChatSidebar({
     if (title) renameChat(id, title.slice(0, 80));
     setEditingId(null);
     setDraftTitle("");
-  };
-
-  const onLogout = async () => {
-    clearAll();
-    await supabase.auth.signOut();
-    toast.success("Signed out");
-    navigate({ to: "/welcome", replace: true });
   };
 
   return (
@@ -223,12 +208,6 @@ export function ChatSidebar({
         </div>
 
         <div className="border-t border-sidebar-border p-3 space-y-1">
-          {onOpenProfile && (
-            <Button variant="ghost" className="w-full justify-start gap-2" onClick={onOpenProfile}>
-              <UserIcon className="h-4 w-4" />
-              Profile
-            </Button>
-          )}
           {onOpenAbout && (
             <Button variant="ghost" className="w-full justify-start gap-2" onClick={onOpenAbout}>
               <Info className="h-4 w-4" />
@@ -241,17 +220,6 @@ export function ChatSidebar({
               Settings
             </Button>
           )}
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2 text-destructive hover:text-destructive"
-            onClick={() => {
-              onClose();
-              onLogout();
-            }}
-          >
-            <LogOut className="h-4 w-4" />
-            Log out
-          </Button>
         </div>
       </aside>
     </>
